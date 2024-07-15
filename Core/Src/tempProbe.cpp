@@ -1,4 +1,4 @@
-#include "tempprobe.h"
+#include "tempProbe.h"
 #include "kalman.h"
 
 //TempProbe::TempProbe(uint32_t *adcValue) {

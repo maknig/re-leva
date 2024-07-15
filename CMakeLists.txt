@@ -53,7 +53,9 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     Core/Src/pid.cpp
     Core/Src/switch.cpp
     Core/Src/led.cpp
+    Core/Src/pump.cpp
     Core/Src/tempProbe.cpp
+    Core/Src/waterlevel.cpp
 )
 
 # Add include paths

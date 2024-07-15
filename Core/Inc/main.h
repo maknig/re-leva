@@ -57,13 +57,17 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define WATER_LEVEL_1_Pin GPIO_PIN_1
-#define WATER_LEVEL_1_GPIO_Port GPIOA
+#define WATER_LEVEL_EN_2_Pin GPIO_PIN_0
+#define WATER_LEVEL_EN_2_GPIO_Port GPIOA
+#define WATER_LEVEL_2_Pin GPIO_PIN_1
+#define WATER_LEVEL_2_GPIO_Port GPIOA
 #define SW1_Pin GPIO_PIN_2
 #define SW1_GPIO_Port GPIOA
 #define SW1_EXTI_IRQn EXTI2_IRQn
-#define WATER_LEVEL_2_Pin GPIO_PIN_4
-#define WATER_LEVEL_2_GPIO_Port GPIOA
+#define WATER_LEVEL_EN_1_Pin GPIO_PIN_3
+#define WATER_LEVEL_EN_1_GPIO_Port GPIOA
+#define WATER_LEVEL_1_Pin GPIO_PIN_4
+#define WATER_LEVEL_1_GPIO_Port GPIOA
 #define SW2_Pin GPIO_PIN_5
 #define SW2_GPIO_Port GPIOA
 #define ADC_T_COFFEE_1_Pin GPIO_PIN_6
@@ -78,8 +82,6 @@ void Error_Handler(void);
 #define LED1_GPIO_Port GPIOB
 #define LED2_Pin GPIO_PIN_10
 #define LED2_GPIO_Port GPIOB
-#define HEATER_COFFEE_Pin GPIO_PIN_12
-#define HEATER_COFFEE_GPIO_Port GPIOB
 #define PUMP_STEAM_Pin GPIO_PIN_15
 #define PUMP_STEAM_GPIO_Port GPIOB
 #define PUMP_COFFEE_Pin GPIO_PIN_8
@@ -87,6 +89,8 @@ void Error_Handler(void);
 #define ZERO_CROSS_Pin GPIO_PIN_11
 #define ZERO_CROSS_GPIO_Port GPIOA
 #define ZERO_CROSS_EXTI_IRQn EXTI15_10_IRQn
+#define HEATER_COFFEE_Pin GPIO_PIN_12
+#define HEATER_COFFEE_GPIO_Port GPIOA
 #define HEATER_STEAM_Pin GPIO_PIN_8
 #define HEATER_STEAM_GPIO_Port GPIOB
 
