@@ -19,12 +19,12 @@ void Switch::update() {
         if (_state == Switch::state::PRESSED) {
             uint32_t deltaT = HAL_GetTick() - _timePressed;
             if (deltaT > _eventTime1 && deltaT < _eventTime2) {
-                _handleEvent1();
-                //_led->toggle();
+                if (_handleEvent1)
+                    _handleEvent1();
                 _state = Switch::state::OFF;
             } else if ((HAL_GetTick() - _timePressed) > _eventTime2) {
-                _handleEvent2();
-                //_led->doBlink();
+                if (_handleEvent2)
+                    _handleEvent2();
                 _state = Switch::state::OFF;
             }
         }

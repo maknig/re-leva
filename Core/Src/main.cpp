@@ -148,7 +148,7 @@ int main(void) {
     switch1.setEventHandle1(std::bind(&Boiler::toggleState, &coffeeBoiler));
     //switch1.setEventHandle2(std::bind(&Pump::pump, &coffeePump, 5));
 
-    coffeeWaterLevel.setHandleLevelLow(std::bind(&Pump::pump, &coffeePump, 3));
+    //coffeeWaterLevel.setHandleLevelLow(std::bind(&Pump::pump, &coffeePump, 3));
     steamWaterLevel.setHandleLevelLow(std::bind(&LED::doBlink, &led2));
 
     switch2.setEventHandle2(std::bind(&LED::doBlink, &led2));
