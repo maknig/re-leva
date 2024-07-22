@@ -60,22 +60,25 @@ uint32_t valuesADC[6];
 TempProbe tempProbeCoffee;
 TempProbe tempProbeSteam;
 float tempCoffee = 0;
+float tempSteam = 0;
 
 Pump coffeePump(PUMP_COFFEE_GPIO_Port, PUMP_COFFEE_Pin);
+Pump steamPump(PUMP_STEAM_GPIO_Port, PUMP_STEAM_Pin);
+
 WaterLevel coffeeWaterLevel(WATER_LEVEL_EN_1_GPIO_Port, WATER_LEVEL_EN_1_Pin,
                             &valuesADC[4]);
 
 WaterLevel steamWaterLevel(WATER_LEVEL_EN_2_GPIO_Port, WATER_LEVEL_EN_2_Pin,
                            &valuesADC[5]);
 
-Boiler coffeeBoiler;
-Boiler steamBoiler;
-
 LED led1(LED1_GPIO_Port, LED1_Pin);
 LED led2(LED2_GPIO_Port, LED2_Pin);
 
 Switch switch1(SW1_GPIO_Port, SW1_Pin);
 Switch switch2(SW2_GPIO_Port, SW2_Pin);
+
+Boiler coffeeBoiler(led1, tempProbeCoffee, coffeeWaterLevel, coffeePump);
+Boiler steamBoiler(led2, tempProbeSteam, steamWaterLevel, steamPump);
 
 // Boiler boilerCoffee;
 // boiler1.setTempProbe(tempProbe1);
@@ -137,25 +140,36 @@ int main(void) {
     HAL_ADC_Start_DMA(&hadc1, (uint32_t *)&valuesADC, 6);
 
     tempProbeCoffee.setADCRef(&valuesADC[2]);
-    coffeeBoiler.setTempProbe(tempProbeCoffee);
-    coffeeBoiler.setWaterLevel(coffeeWaterLevel);
-    coffeeBoiler.setLed(&led1);
+    tempProbeSteam.setADCRef(&valuesADC[0]);
+
+    // coffeeBoiler.setTempProbe(tempProbeCoffee);
+    // coffeeBoiler.setWaterLevel(coffeeWaterLevel);
+    // coffeeBoiler.setLed(&led1);
 
     coffeeBoiler.setHeater(HEATER_COFFEE_GPIO_Port, HEATER_COFFEE_Pin);
-    coffeeBoiler.setTargetTemp(93.0);
+    coffeeBoiler.setTargetTemp(99.0);
+
+    // steamBoiler.setTempProbe(tempProbeSteam);
+    // steamBoiler.setWaterLevel(steamWaterLevel);
+    // steamBoiler.setLed(&led2);
+
+    steamBoiler.setHeater(HEATER_STEAM_GPIO_Port, HEATER_STEAM_Pin);
+    steamBoiler.setTargetTemp(115.0);
+
     // boiler1.setSwitch(SW1_GPIO_Port, SW1_Pin);
 
     switch1.setEventHandle1(std::bind(&Boiler::toggleState, &coffeeBoiler));
-    //switch1.setEventHandle2(std::bind(&Pump::pump, &coffeePump, 5));
+    switch2.setEventHandle1(std::bind(&Boiler::toggleState, &steamBoiler));
+    // switch1.setEventHandle2(std::bind(&Pump::pump, &coffeePump, 5));
 
-    //coffeeWaterLevel.setHandleLevelLow(std::bind(&Pump::pump, &coffeePump, 3));
-    steamWaterLevel.setHandleLevelLow(std::bind(&LED::doBlink, &led2));
+    coffeeWaterLevel.setHandleLevelLow(std::bind(&Pump::pump, &coffeePump, 3));
+    steamWaterLevel.setHandleLevelLow(std::bind(&Pump::pump, &steamPump, 3));
 
-    switch2.setEventHandle2(std::bind(&LED::doBlink, &led2));
-    //switch2.setEventHandle1(std::bind(&LED::toggle, &led2));
-    switch2.setEventHandle1(std::bind(&Pump::togglePump, &coffeePump));
+    // switch2.setEventHandle2(std::bind(&LED::doBlink, &led2));
+    // switch2.setEventHandle1(std::bind(&LED::toggle, &led2));
+    // switch2.setEventHandle1(std::bind(&Pump::togglePump, &coffeePump));
 
-    HAL_Delay(10);
+    HAL_Delay(1000);
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -165,18 +179,14 @@ int main(void) {
 
         /* USER CODE BEGIN 3 */
         coffeeBoiler.update();
-        coffeePump.update();
-
-        led1.update();
-        led2.update();
+        steamBoiler.update();
 
         switch1.update();
         switch2.update();
 
-        coffeeWaterLevel.update();
-        steamWaterLevel.update();
 
         tempCoffee = coffeeBoiler.getTemperature();
+        tempSteam = steamBoiler.getTemperature();
 
         HAL_ADC_Start_DMA(&hadc1, (uint32_t *)&valuesADC, 6);
 
@@ -492,7 +502,10 @@ static void MX_GPIO_Init(void) {
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     if (GPIO_Pin == ZERO_CROSS_Pin) {
         coffeeBoiler.firePulse();
+        steamBoiler.firePulse();
+
         coffeePump.firePulse();
+        steamPump.firePulse();
     } else {
         __NOP();
     }

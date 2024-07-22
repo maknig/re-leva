@@ -13,6 +13,7 @@ class Pump {
     void update();
     void togglePump();
     void pump(uint16_t time);
+    void stop() { _state = state::OFF; };
 
     enum state { OFF, PUMP, PUMP_FOR };
 
@@ -22,8 +23,8 @@ class Pump {
     uint16_t _pin;
 
     PID _pid;
-    uint16_t _timePumpStart = 0;
-    uint16_t _timePumpFor = 0;
+    uint64_t _timePumpStart = 0;
+    uint64_t _timePumpFor = 0;
     uint8_t _totalPulses = 8;
     uint8_t _skipPulses = 2;
     uint8_t _firePulses = 6;
