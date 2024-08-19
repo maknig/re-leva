@@ -147,14 +147,14 @@ int main(void) {
     // coffeeBoiler.setLed(&led1);
 
     coffeeBoiler.setHeater(HEATER_COFFEE_GPIO_Port, HEATER_COFFEE_Pin);
-    coffeeBoiler.setTargetTemp(99.0);
+    coffeeBoiler.setTargetTemp(94.0);
 
     // steamBoiler.setTempProbe(tempProbeSteam);
     // steamBoiler.setWaterLevel(steamWaterLevel);
     // steamBoiler.setLed(&led2);
 
     steamBoiler.setHeater(HEATER_STEAM_GPIO_Port, HEATER_STEAM_Pin);
-    steamBoiler.setTargetTemp(115.0);
+    steamBoiler.setTargetTemp(118.0);
 
     // boiler1.setSwitch(SW1_GPIO_Port, SW1_Pin);
 
