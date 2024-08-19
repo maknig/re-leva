@@ -16,6 +16,7 @@
  ******************************************************************************
  */
 /* USER CODE END Header */
+
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
@@ -37,7 +38,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define COFFE_TEMP 93
+#define STEAM_TEMP 120
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -147,14 +149,14 @@ int main(void) {
     // coffeeBoiler.setLed(&led1);
 
     coffeeBoiler.setHeater(HEATER_COFFEE_GPIO_Port, HEATER_COFFEE_Pin);
-    coffeeBoiler.setTargetTemp(94.0);
+    coffeeBoiler.setTargetTemp(COFFE_TEMP);
 
     // steamBoiler.setTempProbe(tempProbeSteam);
     // steamBoiler.setWaterLevel(steamWaterLevel);
     // steamBoiler.setLed(&led2);
 
     steamBoiler.setHeater(HEATER_STEAM_GPIO_Port, HEATER_STEAM_Pin);
-    steamBoiler.setTargetTemp(118.0);
+    steamBoiler.setTargetTemp(STEAM_TEMP);
 
     // boiler1.setSwitch(SW1_GPIO_Port, SW1_Pin);
 
@@ -183,7 +185,6 @@ int main(void) {
 
         switch1.update();
         switch2.update();
-
 
         tempCoffee = coffeeBoiler.getTemperature();
         tempSteam = steamBoiler.getTemperature();
