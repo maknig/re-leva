@@ -7,7 +7,7 @@ WaterLevel::WaterLevel() {}
 WaterLevel::WaterLevel(GPIO_TypeDef *port, uint16_t pin, uint32_t *adcRef)
     : _portEnable(port), _pinEnable(pin), _adcValue(adcRef) {}
 
-void WaterLevel::update() {
+void WaterLevel::update(float temp) {
 
     if ((HAL_GetTick() - _timeLastMeasure) > (1 / _updateRate) * 1000) {
 
@@ -19,7 +19,10 @@ void WaterLevel::update() {
         } else {
             _value /= _numMeasure;
 
-            if (_value > _threshold) {
+            uint32_t threshold =
+                temp < _lowTemp ? _thresholdLowTemp : _threshold;
+
+            if (_value > threshold) {
                 _state = WaterLevel::state::LOW;
                 if (_handleLevelLow)
                     _handleLevelLow();

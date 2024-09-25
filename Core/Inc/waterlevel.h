@@ -17,7 +17,7 @@ class WaterLevel {
     };
     bool isLow();
 
-    void update();
+    void update(float temp);
 
     enum state { LOW, OK };
 
@@ -31,7 +31,9 @@ class WaterLevel {
     std::function<void(void)> _handleLevelLow;
     std::function<void(void)> _handleLevelOk;
 
-    uint32_t _threshold = 2100;
+    uint32_t _threshold = 2270;
+    uint32_t _thresholdLowTemp = 2800;
+    float _lowTemp = 50;
     uint8_t _numMeasure = 10;
     uint8_t _measureCount = 0;
     float _value = 0;

@@ -21,13 +21,14 @@ void Boiler::update() {
     _led.update();
 
     if (_state == Boiler::state::HEATING) {
-        _waterLevel.update();
-        _pump.update();
         // updateSwitch();
 
         float temp = _tempProbe.getTemperature();
         _firePulses = _pid.update(temp);
         _skipPulses = _pid.getMaxValue() - _firePulses;
+
+        _waterLevel.update(temp);
+        _pump.update();
 
         if (_pid.getTargetValue() - temp > _tempMargin)
             _led.doBlink();
@@ -37,7 +38,6 @@ void Boiler::update() {
     } else {
         _led.setState(LED::state::OFF);
     }
-
 }
 
 bool Boiler::isWaterLevelLow() { return _waterLevel.isLow(); }
