@@ -18,8 +18,12 @@ class PID {
   private:
     float _error = 0;
     float _targetValue = 20;
-    float _previous_error = 0;
+    float _lastError = 0;
+    float _cumError = 0;
+    float _rateError = 0;
+    float _lastRateError = 0;
     float _deltaT = 0;
+    float _updateRate = 10; // 10Hz
     long _timeNow, _timePrevStep;
     double _controlValue = 0;
     float _minValue = 0;
@@ -27,9 +31,9 @@ class PID {
     float _pValue = 0;
     float _iValue = 0;
     float _dValue = 0;
-    float _kp = 40;
-    float _ki = 0.0;
-    float _kd = 3.5;
+    float _kp = 5;
+    float _ki = 0.5;
+    float _kd = 1;
 };
 
 #endif

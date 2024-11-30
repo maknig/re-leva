@@ -25,28 +25,22 @@
 #include "kalman.h"
 #include "led.h"
 #include "pump.h"
+#include "stm32l4xx_hal.h"
+#include "stm32l4xx_hal_i2c.h"
 #include "switch.h"
 #include "waterlevel.h"
-#include <functional>
 #include <cstring>
+#include <functional>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-__IO uint32_t Transfer_Direction = 0;
-__IO uint32_t Xfer_Complete = 0;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define COFFE_TEMP 91
-#define STEAM_TEMP 120
-
-#define COUNTOF(__BUFFER__) (sizeof(__BUFFER__) / sizeof(*(__BUFFER__)))
-/* Size of Transmission buffer */
-#define TXBUFFERSIZE (COUNTOF(aTxBuffer))
-/* Size of Reception buffer */
-#define RXBUFFERSIZE TXBUFFERSIZE
+#define COFFEE_TEMP 93
+#define STEAM_TEMP 124
 
 typedef struct __attribute__((__packed__)) {
     float tempBoiler;
@@ -71,19 +65,31 @@ I2C_HandleTypeDef hi2c1;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-int32_t size;
-uint8_t aTxBuffer[16];
-uint8_t aRxBuffer[16];
+int32_t last_time;
+int32_t time;
+
+#define RxSIZE 16
+uint8_t aTxBuffer[RxSIZE];
+uint8_t aRxBuffer[RxSIZE];
+
+uint8_t rxcount = 0;
+uint8_t txcount = 0;
+
+int countAddr = 0;
+int countrxcplt = 0;
+int counterror = 0;
 
 FloatStruct buffer = {1.0f, 2.0f, 3.0f, 4.0f};
 
 uint32_t valuesADC[6];
 
-// TempProbe tempProbe1(&value_adc[0]);
 TempProbe tempProbeCoffee;
 TempProbe tempProbeSteam;
+
 float tempCoffee = 0;
 float tempSteam = 0;
+
+int coffeTargetTemp = COFFEE_TEMP;
 
 Pump coffeePump(PUMP_COFFEE_GPIO_Port, PUMP_COFFEE_Pin);
 Pump steamPump(PUMP_STEAM_GPIO_Port, PUMP_STEAM_Pin);
@@ -102,9 +108,6 @@ Switch switch2(SW2_GPIO_Port, SW2_Pin);
 
 Boiler coffeeBoiler(led1, tempProbeCoffee, coffeeWaterLevel, coffeePump);
 Boiler steamBoiler(led2, tempProbeSteam, steamWaterLevel, steamPump);
-
-// Boiler boilerCoffee;
-// boiler1.setTempProbe(tempProbe1);
 
 /* USER CODE END PV */
 
@@ -142,7 +145,8 @@ int main(void) {
     HAL_Init();
 
     /* USER CODE BEGIN Init */
-    size = sizeof(FloatStruct) / sizeof(uint8_t);
+    std::memcpy(aRxBuffer, &coffeTargetTemp, 4);
+
     /* USER CODE END Init */
 
     /* Configure the system clock */
@@ -171,21 +175,15 @@ int main(void) {
     tempProbeCoffee.setADCRef(&valuesADC[2]);
     tempProbeSteam.setADCRef(&valuesADC[0]);
 
-    // coffeeBoiler.setTempProbe(tempProbeCoffee);
-    // coffeeBoiler.setWaterLevel(coffeeWaterLevel);
-    // coffeeBoiler.setLed(&led1);
-
     coffeeBoiler.setHeater(HEATER_COFFEE_GPIO_Port, HEATER_COFFEE_Pin);
-    coffeeBoiler.setTargetTemp(COFFE_TEMP);
-
-    // steamBoiler.setTempProbe(tempProbeSteam);
-    // steamBoiler.setWaterLevel(steamWaterLevel);
-    // steamBoiler.setLed(&led2);
+    coffeeBoiler.setMinMaxTemp(20, 100);
+    coffeeBoiler.setTargetTemp(COFFEE_TEMP);
+    // coffeeBoiler.setPidParam(5, 0.3, 180);
+    coffeeBoiler.setPidParam(5, 0.3, 200);
 
     steamBoiler.setHeater(HEATER_STEAM_GPIO_Port, HEATER_STEAM_Pin);
     steamBoiler.setTargetTemp(STEAM_TEMP);
-
-    // boiler1.setSwitch(SW1_GPIO_Port, SW1_Pin);
+    steamBoiler.setPidParam(15, 0.3, 280);
 
     switch1.setEventHandle1(std::bind(&Boiler::toggleState, &coffeeBoiler));
     switch2.setEventHandle1(std::bind(&Boiler::toggleState, &steamBoiler));
@@ -205,6 +203,8 @@ int main(void) {
     /* USER CODE BEGIN WHILE */
     while (1) {
         /* USER CODE END WHILE */
+        time = HAL_GetTick() - last_time;
+        last_time = HAL_GetTick();
 
         /* USER CODE BEGIN 3 */
         coffeeBoiler.update();
@@ -216,21 +216,15 @@ int main(void) {
         tempCoffee = coffeeBoiler.getTemperature();
         tempSteam = steamBoiler.getTemperature();
 
+        if (coffeTargetTemp != coffeeBoiler.getTargetTemp())
+            coffeeBoiler.setTargetTemp(coffeTargetTemp);
+
         buffer.tempBoiler = coffeeBoiler.getTemperature();
         buffer.tempSteam = steamBoiler.getTemperature();
 
         HAL_ADC_Start_DMA(&hadc1, (uint32_t *)&valuesADC, 6);
 
         HAL_Delay(10);
-
-        if (Xfer_Complete == 1) {
-            HAL_Delay(1);
-            // Put I2C peripheral in listen mode process
-            if (HAL_I2C_EnableListen_IT(&hi2c1) != HAL_OK) {
-                Error_Handler();
-            }
-            Xfer_Complete = 0;
-        }
     }
     /* USER CODE END 3 */
 }
@@ -559,13 +553,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
  */
 
 void HAL_I2C_SlaveTxCpltCallback(I2C_HandleTypeDef *I2cHandle) {
-    /* Toggle LED4: Transfer in transmission process is correct */
-
-    Xfer_Complete = 1;
-    aTxBuffer[0]++;
-    aTxBuffer[1]++;
-    aTxBuffer[2]++;
-    aTxBuffer[3]++;
+    txcount++;
+    HAL_I2C_Slave_Seq_Transmit_IT(I2cHandle, aTxBuffer + txcount, 1,
+                                  I2C_NEXT_FRAME);
 }
 
 /**
@@ -575,14 +565,23 @@ void HAL_I2C_SlaveTxCpltCallback(I2C_HandleTypeDef *I2cHandle) {
  *         you can add your own implementation.
  * @retval None
  */
-void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *I2cHandle) {
-    /* Toggle LED4: Transfer in reception process is correct */
 
-    Xfer_Complete = 1;
-    aRxBuffer[0] = 0x00;
-    aRxBuffer[1] = 0x00;
-    aRxBuffer[2] = 0x00;
-    aRxBuffer[3] = 0x00;
+void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *I2cHandle) {
+    rxcount++;
+    if (rxcount < RxSIZE) {
+        if (rxcount == RxSIZE - 1) {
+            HAL_I2C_Slave_Seq_Receive_IT(I2cHandle, aRxBuffer + rxcount, 1,
+                                         I2C_LAST_FRAME);
+        } else {
+            HAL_I2C_Slave_Seq_Receive_IT(I2cHandle, aRxBuffer + rxcount, 1,
+                                         I2C_NEXT_FRAME);
+        }
+    }
+
+    if (rxcount == RxSIZE) {
+
+        std::memcpy(&coffeTargetTemp, aRxBuffer, 4);
+    }
 }
 
 /**
@@ -595,26 +594,20 @@ void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *I2cHandle) {
  */
 void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection,
                           uint16_t AddrMatchCode) {
-    Transfer_Direction = TransferDirection;
-    if (Transfer_Direction != 0) {
-        // Start the transmission process
-        // While the I2C in reception process, user can transmit data through
-        // "aTxBuffer" buffer
-    	std::memcpy(aTxBuffer,&buffer,16);
-        if (HAL_I2C_Slave_Seq_Transmit_IT(&hi2c1, (uint8_t *)aTxBuffer,
-                                          TXBUFFERSIZE,
-                                          I2C_FIRST_AND_LAST_FRAME) != HAL_OK)
-
-        {
-            Error_Handler();
-        }
-
+    if (TransferDirection ==
+        I2C_DIRECTION_TRANSMIT) // if the master wants to transmit the data
+    {
+        rxcount = 0;
+        countAddr++;
+        // receive using sequential function.
+        HAL_I2C_Slave_Seq_Receive_IT(hi2c, aRxBuffer + rxcount, 1,
+                                     I2C_FIRST_FRAME);
     } else {
+        txcount = 0;
+        std::memcpy(aTxBuffer, &buffer, 16);
+        if (HAL_I2C_Slave_Seq_Transmit_IT(hi2c, aTxBuffer + txcount, 1,
+                                          I2C_NEXT_FRAME) != HAL_OK) {
 
-        // Put I2C peripheral in reception process
-        if (HAL_I2C_Slave_Seq_Receive_IT(&hi2c1, (uint8_t *)aRxBuffer,
-                                         RXBUFFERSIZE,
-                                         I2C_FIRST_AND_LAST_FRAME) != HAL_OK) {
             Error_Handler();
         }
     }
@@ -626,7 +619,9 @@ void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection,
  *                the configuration information for the specified I2C.
  * @retval None
  */
-void HAL_I2C_ListenCpltCallback(I2C_HandleTypeDef *hi2c) { Xfer_Complete = 1; }
+void HAL_I2C_ListenCpltCallback(I2C_HandleTypeDef *hi2c) {
+    HAL_I2C_EnableListen_IT(hi2c); // slave is ready again
+}
 
 /**
  * @brief  I2C error callbacks.
@@ -641,9 +636,49 @@ void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *I2cHandle) {
      * communication. 2- When Master doesn't acknowledge the last data
      * transferred, Slave doesn't care in this example.
      */
-    if (HAL_I2C_GetError(I2cHandle) != HAL_I2C_ERROR_AF) {
-        Error_Handler();
+    uint32_t errorcode = HAL_I2C_GetError(I2cHandle);
+
+    if (errorcode == 4) {
+        if (txcount == 0) // error is while slave is receiving
+        {
+            rxcount = 0; // Reset the rxcount for the next operation
+            std::memcpy(&coffeTargetTemp, aRxBuffer, 4);
+        } else // error while slave is transmitting
+        {
+            txcount = 0; // Reset the txcount for the next operation
+        }
+
     }
+    /* BERR Error commonly occurs during the Direction switch
+     * Here we the software reset bit is set by the HAL error handler
+     * Before resetting this bit, we make sure the I2C lines are released and
+     * the bus is free I am simply reinitializing the I2C to do so
+     */
+    else if (errorcode == 1) // BERR Error
+    {
+        HAL_I2C_DeInit(I2cHandle);
+        HAL_I2C_Init(I2cHandle);
+        std::memset(aRxBuffer, '\0', RxSIZE); // reset the Rx buffer
+        rxcount = 0;                          // reset the count
+    }
+
+    else {
+
+        counterror++;
+    }
+
+    HAL_I2C_EnableListen_IT(I2cHandle);
+}
+
+void reset_gpio_pins() {
+    /*Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(GPIOA,
+                      WATER_LEVEL_EN_1_Pin | WATER_LEVEL_EN_2_Pin |
+                          PUMP_COFFEE_Pin | HEATER_COFFEE_Pin,
+                      GPIO_PIN_RESET);
+
+    /*Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(GPIOB, HEATER_STEAM_Pin | PUMP_STEAM_Pin, GPIO_PIN_RESET);
 }
 /* USER CODE END 4 */
 
@@ -656,7 +691,12 @@ void Error_Handler(void) {
     /* User can add his own implementation to report the HAL error return state
      */
     __disable_irq();
+    reset_gpio_pins();
+
     while (1) {
+        led1.toggle();
+        led2.toggle();
+        HAL_Delay(250);
     }
     /* USER CODE END Error_Handler_Debug */
 }

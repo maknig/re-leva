@@ -42,7 +42,21 @@ void Boiler::update() {
 
 bool Boiler::isWaterLevelLow() { return _waterLevel.isLow(); }
 
-void Boiler::setTargetTemp(float temp) { _pid.setTargetValue(temp); }
+void Boiler::setTargetTemp(float temp) {
+
+    if (temp > _maxTemp)
+        temp = _maxTemp;
+    if (temp < _minTemp)
+        temp = _minTemp;
+// Remember to store the previous error for next loop.
+    _pid.setTargetValue(temp);
+}
+float Boiler::getTargetTemp() { return _pid.getTargetValue(); }
+
+void Boiler::setMinMaxTemp(float minTemp, float maxTemp) {
+    _minTemp = minTemp;
+    _maxTemp = maxTemp;
+}
 
 void Boiler::firePulse() {
     if (_state == Boiler::state::HEATING && !_waterLevel.isLow()) {
