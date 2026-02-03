@@ -3,7 +3,7 @@
 Firmware for the ReLeva espresso machine controller.  
 The system manages temperature control, boiler water levels, heater switching,
 and communication with external devices. For more information see: 
-[ReLeva Project](http://github.com)
+[ReLeva Project](https://maknig.github.io/re-leva/)
 
 The firmware targets an **STM32L431** microcontroller and is built using
 CMake and the GNU Arm Embedded toolchain.
