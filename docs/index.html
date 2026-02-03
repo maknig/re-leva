@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="ReLeva – a custom-built Leva-style espresso machine with dual boilers, precise temperature control, and iOS app integration."
+    />
+    <title>ReLeva – A Coffee Machine Project</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <div class="page">
+      <header class="site-header" role="banner">
+        <h1 class="title">ReLeva</h1>
+        <p class="tagline" role="doc-subtitle">A coffee machine project</p>
+      </header>
+
+      <main class="content" id="main" role="main">
+        <section aria-labelledby="intro-heading">
+          <figure class="machine-photo" style="text-align: center">
+            <img
+              src="images/releva.jpeg"
+              width="640"
+              alt="ReLeva espresso machine — stainless-steel body with glass water tank"
+              loading="lazy"
+            />
+            <figcaption>ReLeva — custom Leva-style espresso machine</figcaption>
+          </figure>
+
+          <p>
+            <strong>ReLeva</strong> is a personal project focused on designing
+            and building a high-performance lever-style espresso machine from
+            the ground up. The goal is to combine the tactile, mechanical purity
+            of classic lever machines with modern control, measurement, and
+            repeatability.
+          </p>
+          <p>
+            The machine is constructed primarily from stainless steel, with a
+            glass water reservoir, and uses a custom-designed electronics and
+            control system.
+          </p>
+        </section>
+
+        <section aria-labelledby="goals-heading">
+          <h2 id="goals-heading">Design goals</h2>
+          <ul>
+            <li>
+              Preserve the mechanical feel and feedback of a traditional lever
+              machine
+            </li>
+            <li>Stable and repeatable brew temperatures</li>
+            <li>Robust and serviceable construction</li>
+            <li>High-end, food-safe materials</li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="design-choices-heading">
+          <h2 id="design-choices-heading">Design choices</h2>
+          <p>
+            ReLeva uses 304/316 stainless steel for its boilers
+            and primary thermal components. This material was selected for its
+            food safety, corrosion resistance, and long-term durability.
+            Compared to copper or aluminum, stainless steel provides higher
+            thermal mass, resulting in a slower heat-up phase but improved
+            temperature stability once operating conditions are reached. In
+            practice, warm-up time remains competitive with — and often faster
+            than — many traditional lever machines.
+          </p>
+          <p>
+            Traditional lever espresso machines typically operate without a
+            pump, favoring mechanical simplicity and purity. ReLeva
+            intentionally diverges from this approach by incorporating a pump to
+            manage the two boilers independently. This enables automatic boiler
+            filling and water-level control, improving usability and safety.
+          </p>
+          <p>
+            In pump-less systems, boiler refilling often relies on fixed water
+            plugs, requiring the boiler to cool down before opening — an
+            operational compromise that interrupts workflow. By integrating a
+            pump, ReLeva preserves the manual lever extraction experience while
+            removing these practical limitations.
+          </p>
+        </section>
+
+        <section aria-labelledby="features-heading">
+          <h2 id="features-heading">Features</h2>
+          <ul>
+            <li>
+              <strong>Dual boiler architecture:</strong> Separate boilers for
+              brew water and steam, each temperature-controlled independently.
+            </li>
+            <li>
+              <strong>Constant-temperature brewhead:</strong> The brewhead is
+              kept at a stable temperature by circulating water from the boiler
+              via convection, ensuring consistent extraction.
+            </li>
+            <li>
+              <strong>Custom controller:</strong> Precise temperature
+              measurement and control, plus water-level management.
+            </li>
+            <li>
+              <strong>Bluetooth connectivity:</strong>
+              Bluetooth Low Energy (BLE) for real-time monitoring and
+              configuration.
+            </li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="controller-heading">
+          <h2 id="controller-heading">Controller</h2>
+          <p>
+            ReLeva uses a custom-designed controller board responsible for PID
+            temperature control, boiler water-level regulation, and power
+            management. The design prioritizes robustness and measurement
+            accuracy.
+          </p>
+          <ul>
+            <li>
+              <strong>Microcontroller</strong><br />
+              STM32L431 (ARM Cortex-M4), selected for low power consumption and
+              high-quality analog peripherals.
+            </li>
+            <li>
+              <strong>Heater control</strong><br />
+              AC heater control with dedicated zero-cross detection.
+            </li>
+            <li>
+              <strong>Analog front-end</strong><br />
+              Sensor linearization and signal conditioning implemented using
+              op-amp circuit.
+            </li>
+            <li>
+              <strong>Connectivity</strong><br />
+              Bluetooth Low Energy (BLE) for real-time monitoring and
+              configuration.
+            </li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="limitations-heading">
+          <h2 id="limitations-heading">Known limitations</h2>
+          <ul>
+            <li>
+              <strong>Warm-up time:</strong> Due to the high thermal mass of the
+              stainless steel boilers and group, initial warm-up is slower
+              compared to low-mass copper or aluminum systems. The design
+              prioritizes stability over minimum warm-up time.
+            </li>
+            <li>
+              <strong>Manual profiling:</strong> Pressure profiling is currently
+              purely mechanical via the lever. While this preserves the
+              traditional lever experience, it limits repeatability compared to
+              actively controlled pressure systems.
+            </li>
+            <li>
+              <strong>Early-stage firmware:</strong> The control firmware is
+              functional but still evolving. Features such as advanced logging,
+              fault diagnostics, and calibration tooling are under active
+              development.
+            </li>
+            <li>
+              <strong>Single-sensor brew temperature:</strong> Brew temperature
+              control is currently based on a limited number of sensors. A
+              dedicated brew pressure sensor is in development to improve
+              extraction profiling and data correlation.
+            </li>
+            <li>
+              <strong>Not production-hardened:</strong> This machine is a
+              one-off prototype. Mechanical tolerances, wiring, and safety
+              systems are designed for experimentation and learning rather than
+              certification or mass production.
+            </li>
+          </ul>
+        </section>
+        <section aria-labelledby="status-heading">
+          <h2 id="status-heading">Project status</h2>
+          <p>
+            ReLeva is an ongoing project. Hardware revisions, firmware
+            improvements, and documentation updates are actively in progress. A
+            pressure sensor is currently in development to profile pressure and
+            temperature during coffee extraction.
+          </p>
+        </section>
+
+        <section aria-labelledby="links-heading">
+          <h2 id="links-heading">Downloads & links</h2>
+          <ul>
+            <li>
+              <a href="https://github.com/maknig/re-leva"
+                >Controller firmware (repo)</a
+              >
+            </li>
+            <li>
+              <a href="https://github.com/maknig/re-leva-app">iOS app (repo)</a>
+            </li>
+          </ul>
+        </section>
+      </main>
+
+      <footer class="site-footer" role="contentinfo">
+        <p>Made with ☕ — 2026</p>
+      </footer>
+    </div>
+  </body>
+</html>

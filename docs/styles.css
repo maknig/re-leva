@@ -1,0 +1,135 @@
+:root {
+  --bg: #ffffff;
+  --panel: #fafafa;
+  --accent: #6b4f2a;
+  --text: #222;
+  --muted: #6b6b6b;
+  --border: #e4e4e4;
+}
+
+/* Reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  font-family: "Courier New", monospace;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.45;
+  padding: 2rem;
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Layout */
+.page {
+  width: 100%;
+  max-width: 760px;
+}
+
+.site-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.title {
+  font-size: 2rem;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+
+.tagline {
+  margin-top: 0.25rem;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.content {
+  width: 100%;
+}
+
+/* Sections / cards */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+/* Typography */
+h2,
+h3 {
+  color: var(--accent);
+  margin: 2rem 0 0.5rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
+h3 {
+  font-size: 1.2rem;
+}
+
+p,
+li {
+  margin-bottom: 0.5rem;
+}
+
+section p {
+  text-align: justify;
+}
+
+ul,
+ol {
+  padding-left: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Code / pre */
+pre {
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  padding: 0.5rem;
+  overflow-x: auto;
+  background: transparent;
+  font-size: 0.9rem;
+}
+
+/* Image */
+.machine-photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1.5rem auto;
+}
+
+.machine-photo img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Footer */
+.site-footer {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
